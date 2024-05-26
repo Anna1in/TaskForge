@@ -223,135 +223,212 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
 ```ts
 import { Module } from '@nestjs/common';
-import { ProjectController } from './ProjectController';
-import { ProjectService } from './ProjectService';
-import { ProjectRepository } from './ProjectRepository';
+import { TaskController } from './TaskController';
+import { TaskService } from './TaskService';
+import { TaskRepository } from './TaskRepository';
 import { PrismaService } from './PrismaService';
 import { ProjectByIdPipe } from './ProjectByIdPipe';
+import { TaskByIdPipe } from './TaskByIdPipe';
+import {ProjectRepository} from "./ProjectRepository";
 
 @Module({
-  controllers: [ProjectController],
-  providers: [ProjectService, ProjectRepository, PrismaService, ProjectByIdPipe],
+  controllers: [TaskController],
+  providers: [TaskService, TaskRepository, ProjectRepository, PrismaService, TaskByIdPipe, ProjectByIdPipe],
 })
 export class AppModule {}
+
 ```
 
 ```ts
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ProjectService } from './ProjectService';
-import { CreateProjectDto } from './CreateProjectDto';
+import { TaskService } from './TaskService';
+import { CreateTaskDto } from './CreateTaskDto';
 import { ProjectByIdPipe } from './ProjectByIdPipe';
-import { UpdateProjectDto } from './UpdateProjectDto';
+import { UpdateTaskDto } from './UpdateTaskDto';
+import {TaskByIdPipe} from "./TaskByIdPipe";
 
-@Controller('/projects')
-export class ProjectController {
+@Controller('/tasks')
+export class TaskController {
   constructor (
-    private readonly projectService: ProjectService,
+    private readonly taskService: TaskService,
   ) {}
 
   @Post()
   create (
-    @Body() body: CreateProjectDto,
+    @Body(ProjectByIdPipe) body: CreateTaskDto,
   ) {
-    return this.projectService.create(body);
+    return this.taskService.create(body);
   }
 
   @Get()
   getAll () {
-    return this.projectService.getAll();
+    return this.taskService.getAll();
   }
 
-  @Get('/:projectId')
+  @Get('/:taskId')
   getById (
-    @Param('projectId', ProjectByIdPipe) projectId: string,
+    @Param('taskId', TaskByIdPipe) taskId: string,
   ) {
-    return this.projectService.getById(projectId);
+    return this.taskService.getById(taskId);
   }
 
-  @Patch('/:projectId')
+  @Patch('/:taskId')
   update (
-    @Param('projectId', ProjectByIdPipe) projectId: string,
-    @Body() body: UpdateProjectDto,
+    @Param('taskId', TaskByIdPipe) taskId: string,
+    @Body() body: UpdateTaskDto,
   ) {
-    return this.projectService.update(projectId, body);
+    return this.taskService.update(taskId, body);
   }
 
-  @Delete('/:projectId')
+  @Delete('/:taskId')
   delete (
-    @Param('projectId', ProjectByIdPipe) projectId: string,
+    @Param('taskId', TaskByIdPipe) taskId: string,
   ) {
-    return this.projectService.delete(projectId);
+    return this.taskService.delete(taskId);
   }
 }
 ```
 
-### Сервіс для обробки запитів
+### Сервіс та репозиторії для взаємодії з базою даних
 
 ```ts
 import { Injectable } from '@nestjs/common';
-import { ProjectRepository } from './ProjectRepository';
-import { CreateProjectDto } from './CreateProjectDto';
-import { UpdateProjectDto } from './UpdateProjectDto';
+import { TaskRepository } from './TaskRepository';
+import { CreateTaskDto } from './CreateTaskDto';
+import { UpdateTaskDto } from './UpdateTaskDto';
 
 @Injectable()
-export class ProjectService {
+export class TaskService {
   constructor (
-    private readonly projectRepository: ProjectRepository,
+    private readonly taskRepository: TaskRepository,
   ) {}
 
-  create (body: CreateProjectDto) {
-    return this.projectRepository.create(body);
+  create (body: CreateTaskDto) {
+    return this.taskRepository.create(body);
   }
 
   getAll () {
-    return this.projectRepository.findMany({});
+    return this.taskRepository.findMany({});
   }
 
-  getById (projectId: string) {
-    return this.projectRepository.findById(projectId);
+  getById (taskId: string) {
+    return this.taskRepository.findById(taskId);
   }
 
-  update (projectId: string, body: UpdateProjectDto) {
-    return this.projectRepository.updateById(projectId, body);
+  update (taskId: string, body: UpdateTaskDto) {
+    return this.taskRepository.updateById(taskId, body);
   }
 
-  delete (projectId: string) {
-    return this.projectRepository.deleteById(projectId);
+  delete (taskId: string) {
+    return this.taskRepository.deleteById(taskId);
   }
 }
 ```
 
-### DTO для створення проєкта
+```ts
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from './PrismaService';
+import { Prisma } from '@prisma/client';
+
+@Injectable()
+export class TaskRepository {
+  constructor (
+    private readonly prismaService: PrismaService,
+  ) {}
+
+  create (data: Prisma.TaskUncheckedCreateInput) {
+    return this.prismaService.task.create({ data });
+  }
+
+  findMany (where: Prisma.TaskWhereInput) {
+    return this.prismaService.task.findMany({ where });
+  }
+
+  findById (id: string) {
+    return this.prismaService.task.findUnique({ where: { id} });
+  }
+
+  updateById (id: string, data: Prisma.TaskUncheckedUpdateInput) {
+    return this.prismaService.task.update({
+      where: { id },
+      data,
+    })
+  }
+
+  deleteById (id: string) {
+    return this.prismaService.task.delete({ where: { id } });
+  }
+}
+```
 
 ```ts
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from './PrismaService';
+
+@Injectable()
+export class ProjectRepository {
+  constructor (
+    private readonly prismaService: PrismaService,
+  ) {}
+
+  findById (id: string) {
+    return this.prismaService.project.findUnique({ where: { id} });
+  }
+}
+```
+
+### DTO для створення таски
+
+```ts
+import {IsEnum, IsNotEmpty, IsString, IsUUID} from 'class-validator';
 import { Status } from '@prisma/client';
 
-export class CreateProjectDto {
+export class CreateTaskDto {
   @IsNotEmpty()
   @IsString()
-    name: string;
+  name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  description: string;
 
   @IsNotEmpty()
   @IsEnum(Status)
-    status: Status;
+  status: Status;
+
+  @IsNotEmpty()
+  @IsString()
+  price: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsUUID()
+  projectId: string;
 }
 ```
 
-### DTO для оновлення проєкта
+### DTO для оновлення таски
 
 ```ts
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { Status } from '@prisma/client';
 
-export class UpdateProjectDto {
+export class UpdateTaskDto {
   @IsOptional()
   @IsString()
   name: string;
 
   @IsOptional()
+  @IsString()
+  description: string;
+
+  @IsOptional()
   @IsEnum(Status)
   status: Status;
+
+  @IsOptional()
+  @IsString()
+  price: string;
 }
 ```
 
@@ -359,6 +436,26 @@ export class UpdateProjectDto {
 
 ```ts
 import { PipeTransform, Injectable, NotFoundException } from '@nestjs/common';
+import { TaskRepository } from './TaskRepository';
+
+@Injectable()
+export class TaskByIdPipe implements PipeTransform {
+  constructor (
+    private readonly taskRepository: TaskRepository,
+  ) {}
+
+  async transform(taskId: string) {
+    const task = await this.taskRepository.findById(taskId);
+
+    if (!task) throw new NotFoundException('Task with such id is not found');
+    return taskId;
+  }
+}
+```
+
+```ts
+import { PipeTransform, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateTaskDto } from './CreateTaskDto';
 import { ProjectRepository } from './ProjectRepository';
 
 @Injectable()
@@ -367,11 +464,11 @@ export class ProjectByIdPipe implements PipeTransform {
     private readonly projectRepository: ProjectRepository,
   ) {}
 
-  async transform(projectId: string) {
-    const project = await this.projectRepository.findById(projectId);
+  async transform(body: CreateTaskDto) {
+    const project = await this.projectRepository.findById(body.projectId);
 
     if (!project) throw new NotFoundException('Project with such id is not found');
-    return projectId;
+    return body;
   }
 }
 ```

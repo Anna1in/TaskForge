@@ -3,13 +3,13 @@ home: true
 actionText: Розпочати →
 actionLink: /intro/
 
-footer: "ECL 2.0 Licensed | Copyright © 2024 Tsuria Oleh"
+footer: "ECL 2.0 Licensed | Copyright © 2024 Lubchenko Anna"
 ---
 
 
-**Виконав:** 
+**Виконала:** 
 
-*студент 2-го курсу, групи ІО-21* <span padding-right:5em></span> **Олег Цуря** <a href="https://t.me/fogoog" target="_blank"> Telegram </a>
+*студентка 2-го курсу, групи ІО-21* <span padding-right:5em></span> **Анна Любченко** <a href="https://t.me/caanau" target="_blank"> Telegram </a>
 
 
 **Керівник**

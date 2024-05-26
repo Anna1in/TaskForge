@@ -8,37 +8,37 @@
     <img src="./media/start.png">
 </p>
 
-## POST /projects
+## POST /tasks
 
 <p align="center">
     <img src="./media/post.png">
 </p>
 
-## PATCH /projects/:id
+## PATCH /tasks/:id
 
 <p align="center">
     <img src="./media/patch.png">
 </p>
 
-## GET /projects
+## GET /tasks
 
 <p align="center">
     <img src="./media/getAll.png">
 </p>
 
-## GET /projects/:id
+## GET /tasks/:id
 
 <p align="center">
     <img src="./media/get.png">
 </p>
 
-## DELETE /projects/:id
+## DELETE /tasks/:id
 
 <p align="center">
     <img src="./media/delete.png">
 </p>
 
-## EXCEPTION: Projects was not found
+## EXCEPTION: Task was not found
 
 <p align="center">
     <img src="./media/exception.png">
